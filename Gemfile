@@ -30,6 +30,7 @@ gem 'font-awesome-rails'
 gem "devise", '~> 3.2.2'
 gem "omniauth"
 gem "omniauth-twitter"
+gem "omniauth-github"
 
 # Image and file upload
 gem 'mini_magick'

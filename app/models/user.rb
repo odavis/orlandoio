@@ -4,16 +4,19 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :trackable, :validatable, :omniauthable
   
+  validates_uniqueness_of :email, :allow_blank => true
+
+  has_many :authorizations
+
   extend FriendlyId
   friendly_id :full_name, use: [:slugged, :history, :finders]
-  # [:slugged, :finders, :history]
 
   def self.from_omniauth(auth)
+    # binding.pry
     where(auth.slice("provider", "uid")).first || create_from_omniauth(auth)
   end
 
   def self.create_from_omniauth(auth)
-    #binding.pry
     create! do |user|
       user.provider = auth["provider"]
       user.uid = auth["uid"]
