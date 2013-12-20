@@ -12,14 +12,38 @@ class User < ActiveRecord::Base
   friendly_id :full_name, use: [:slugged, :history, :finders]
 
   def self.from_omniauth(auth)
-    # binding.pry
-    where(auth.slice("provider", "uid")).first || create_from_omniauth(auth)
+    #cases:
+    # user already has email and twitter uid in database
+    # user already has email in database
+    # user has neither email nor witter uid in database
+
+
+    #auth hash contains email:
+    
+    #auth hash contains twitter uid:
+
+
+    # start with find logic
+
+    # if nothing is found:
+
+    #create logic
+
+  # where(auth.slice("provider", "uid")).first || create_from_omniauth(auth)
+    binding.pry
+    if auth["info"]["provider"] == "twitter" 
+      User.authorization.find_by_uid(auth["uid"])
+    elsif User.find_by_email(auth["info"]["email"])
+    else  #looks like we're going to have to create a user
+      user = create_from_omniauth(auth)
+      Authorization.new(provider: auth["provider"], uid: auth["uid"], user_id: user.id)
+    end
   end
 
   def self.create_from_omniauth(auth)
     create! do |user|
-      user.provider = auth["provider"]
-      user.uid = auth["uid"]
+      # user.provider = auth["provider"]
+      # user.uid = auth["uid"]
       user.full_name = auth["info"]["name"]
     end
   end

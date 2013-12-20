@@ -2,11 +2,11 @@ Orlandoio::Application.routes.draw do
 
   devise_for :users, :controllers => {
     :registrations => "users/registrations",
-    :passwords => "users/passwords",
+    #:sessions => "users/sessions",
     :omniauth_callbacks => "omniauth_callbacks"
   }
 
-  resources :users, only: [:show, :index ]
+  resources :users, only: [:show, :index]
   
  
   get "/about", to: "static_pages#about"

@@ -1,5 +1,6 @@
 class Users::RegistrationsController < Devise::RegistrationsController
   before_filter :configure_permitted_parameters, if: :devise_controller?
+  skip_before_filter :check_for_email, only: [:edit, :destroy]
 
     def update
     account_update_params = devise_parameter_sanitizer.sanitize(:account_update)
