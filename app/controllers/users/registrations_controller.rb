@@ -22,12 +22,25 @@ class Users::RegistrationsController < Devise::RegistrationsController
     end
   end
 
+ def create
+  super
+  session[:omniauth] = nil unless @user.new_record?
+  end
 
   protected
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.for(:account_update) { |u| u.permit(:full_name, :email, :category, :avatar, :password, :password_confirmation) }
     devise_parameter_sanitizer.for(:sign_up) { |u| u.permit(:full_name, :email, :password, :password_confirmation ,:category, :avatar) }
+  end
+
+  def build_resource(*args)
+    super
+    if session[:auth]
+      binding.pry
+      @user.apply_omniauth(session[:auth])
+      @user.valid?
+    end
   end
 
 end

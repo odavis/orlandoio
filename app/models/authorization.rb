@@ -1,22 +1,18 @@
 class Authorization < ActiveRecord::Base
   belongs_to :user 
 
-  def fetch_details
-    binding.pry
-    self.send("fetch_details_from_#{self.provider.downcase}")
-  end
+  # validates_presence_of :user_id, :uid, :provider
+  # validates_uniqueness_of :uid, :scope => :provider
 
-  def fetch_details_from_facebook
-  end
 
-  def fetch_details_from_twitter
+  def self.find_from_auth(auth)
+    find_by_provider_and_uid(auth['provider'], auth['uid'])
   end
-
-  def fetch_details_from_github
-  end
-
-  def fetch_details_from_linkedin
-  end
-
   
+  def self.create_from_auth(auth, user = nil)
+    #binding.pry
+    user ||= User.create_from_auth!(auth)
+    authorization = Authorization.create(user: user, uid: auth['uid'], provider: auth['provider'])
+    authorization.save
+  end
 end

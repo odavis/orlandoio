@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
   extend FriendlyId
   friendly_id :full_name, use: [:slugged, :history, :finders]
 
-  def self.from_omniauth(auth)
+  # def self.from_omniauth(auth)
     #cases:
     # user already has email and twitter uid in database
     # user already has email in database
@@ -30,27 +30,49 @@ class User < ActiveRecord::Base
     #create logic
 
   # where(auth.slice("provider", "uid")).first || create_from_omniauth(auth)
-    binding.pry
-    if auth["info"]["provider"] == "twitter" 
-      User.authorization.find_by_uid(auth["uid"])
-    elsif User.find_by_email(auth["info"]["email"])
-    else  #looks like we're going to have to create a user
-      user = create_from_omniauth(auth)
-      Authorization.new(provider: auth["provider"], uid: auth["uid"], user_id: user.id)
-    end
-  end
+    
+  #if auth["provider"] = twitter
+    #if authroization.find_by_uid(auth["uid"])
+      #then new session with user params
+    #else
+      # self.create_from_auth(auth) reate new user with uid / provider / name
+      # before filter to create email association 
+    #end
+  #else
+    #auth["infor"]["email"]
 
-  def self.create_from_omniauth(auth)
-    create! do |user|
-      # user.provider = auth["provider"]
-      # user.uid = auth["uid"]
-      user.full_name = auth["info"]["name"]
-    end
+
+ 
+  #   binding.pry
+  #   if auth["provider"] == "twitter" 
+  #     if User.find_by_email(auth["info"]["email"])
+  #       Authorization.new(provider: auth["provider"], uid: auth["uid"])
+  #       User.authorization.find_by_uid(auth["uid"])
+  #     end
+  #   elsif User.find_by_email(auth["info"]["email"])
+  #   else  #looks like we're going to have to create a user
+  #     user = create_from_omniauth(auth)
+  #     Authorization.new(provider: auth["provider"], uid: auth["uid"], user_id: user.id)
+  #   end
+  # end
+
+def apply_omniauth(auth)
+  if auth["provider"] == "twitter"
+    self.email = auth["info"]["email"] if email.blank?
+  end
+  authorizations.build(provider: auth["provider"], uid: auth["uid"])
+end
+
+
+  
+
+  def self.create_from_auth(auth)
+   create(full_name: auth['info']['name'])    
   end
 
   def self.new_with_session(params, session)
     if session["devise.user_attributes"]
-      new(sessions["devise.user_attributes"], without_protection: true) do |use|
+      new(sessions["devise.user_attributes"], without_protection: true) do |user|
         user.attibutes = params
         user.valid?
       end
@@ -60,7 +82,8 @@ class User < ActiveRecord::Base
   end
 
   def password_required?
-    super && provider.blank?
+    # super && provider.blank?
+    (authorizations.empty? || !password.blank?) && super
   end
 
   def email_required?
